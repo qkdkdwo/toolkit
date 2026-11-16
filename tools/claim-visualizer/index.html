@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>청구항 분해·시각화 도구 (Claim Visualizer)</title>
+<style>
+  :root{
+    --bg:#f7f6f2; --card:#ffffff; --ink:#1d1d1b; --sub:#6b6a65; --line:#e3e1da;
+    --pre:#e8f0fb; --pre-b:#3b6fb6;
+    --tr:#fdf0d8; --tr-b:#b7791f;
+    --body:#e7f5ec; --body-b:#2f8a57;
+    --end:#f6e7f1; --end-b:#9c3d7a;
+    --mark:#fff2a8; --accent:#2b4c7e;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#161615; --card:#21211f; --ink:#ecebe6; --sub:#a3a29c; --line:#36352f;
+      --pre:#1d2b40; --pre-b:#7aa6e6; --tr:#3a2e17; --tr-b:#e3ad5a;
+      --body:#173123; --body-b:#6cc995; --end:#36192c; --end-b:#e08cc0;
+      --mark:#5b5120; --accent:#8fb0e3;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",system-ui,sans-serif;
+    line-height:1.6;font-size:15px}
+  header{padding:28px 20px 8px;max-width:1080px;margin:0 auto}
+  header h1{margin:0;font-size:22px;letter-spacing:-.3px}
+  header p{margin:6px 0 0;color:var(--sub);font-size:13.5px}
+  main{max-width:1080px;margin:0 auto;padding:12px 20px 60px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:16px}
+  .card h2{margin:0 0 12px;font-size:16px}
+  textarea{width:100%;min-height:200px;padding:12px;border:1px solid var(--line);border-radius:8px;
+    background:var(--bg);color:var(--ink);font:inherit;font-size:14px;resize:vertical}
+  .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+  button{font:inherit;font-size:13.5px;padding:8px 14px;border-radius:8px;border:1px solid var(--line);
+    background:var(--card);color:var(--ink);cursor:pointer}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+  @media (prefers-color-scheme: dark){ button.primary{color:#111} }
+  button:hover{filter:brightness(.97)}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{font-size:12.5px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);color:var(--sub)}
+  .chip b{color:var(--ink)}
+  .tree ul{list-style:none;margin:0;padding-left:20px;border-left:1px dashed var(--line)}
+  .tree>ul{padding-left:0;border-left:none}
+  .tree li{margin:4px 0}
+  .tree .node{display:inline-block;padding:3px 10px;border-radius:6px;border:1px solid var(--line);
+    cursor:pointer;font-size:13.5px}
+  .tree .node.ind{border-color:var(--pre-b);font-weight:600}
+  .tree .node.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+  .tabs button{padding:5px 12px;font-size:13px}
+  .tabs button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .legend{display:flex;flex-wrap:wrap;gap:10px;font-size:12.5px;color:var(--sub);margin-bottom:10px}
+  .legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+  .lg-pre::before{background:var(--pre-b)} .lg-tr::before{background:var(--tr-b)}
+  .lg-body::before{background:var(--body-b)} .lg-end::before{background:var(--end-b)}
+  .lg-mark::before{background:var(--mark);border:1px solid var(--line)}
+  .seg{border-left:4px solid;border-radius:6px;padding:8px 12px;margin:6px 0;white-space:pre-wrap;word-break:keep-all}
+  .seg .lab{display:block;font-size:11.5px;font-weight:700;letter-spacing:.3px;margin-bottom:2px}
+  .seg.pre{background:var(--pre);border-color:var(--pre-b)} .seg.pre .lab{color:var(--pre-b)}
+  .seg.tr{background:var(--tr);border-color:var(--tr-b)} .seg.tr .lab{color:var(--tr-b)}
+  .seg.body{background:var(--body);border-color:var(--body-b)} .seg.body .lab{color:var(--body-b)}
+  .seg.end{background:var(--end);border-color:var(--end-b)} .seg.end .lab{color:var(--end-b)}
+  mark{background:var(--mark);color:inherit;padding:0 2px;border-radius:3px}
+  .tbl-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th,td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left;vertical-align:top}
+  th{font-size:12.5px;color:var(--sub);font-weight:600;white-space:nowrap}
+  td.name{font-weight:600;white-space:nowrap}
+  td.raw{min-width:220px}
+  .tag{display:inline-block;font-size:11.5px;padding:1px 7px;border-radius:999px;background:var(--bg);
+    border:1px solid var(--line);margin:1px 2px 1px 0;white-space:nowrap}
+  select,input[type=text]{font:inherit;font-size:13px;padding:4px 6px;border:1px solid var(--line);
+    border-radius:6px;background:var(--bg);color:var(--ink)}
+  input[type=text]{width:100%;min-width:120px}
+  svg text{font-family:inherit}
+  .muted{color:var(--sub);font-size:12.5px}
+  .notice{font-size:12.5px;color:var(--sub);border-top:1px solid var(--line);padding-top:12px;margin-top:8px}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+<header>
+  <h1>청구항 분해·시각화 도구</h1>
+  <p>청구항을 붙여 넣으면 전제부·연결부·본문·종결부로 나누고, 구성요소와 구성요소 사이의 연결관계, 청구항 사이의 인용관계를 보여 줍니다. 입력한 내용은 브라우저 밖으로 전송되지 않습니다.</p>
+</header>
+
+<main>
+  <section class="card">
+    <h2>① 청구항 입력</h2>
+    <textarea id="input" placeholder="【청구항 1】 ... 형식 또는 1. ... 형식으로 붙여 넣으세요. 한국어·영어·중국어·일본어를 지원합니다."></textarea>
+    <div class="row">
+      <button class="primary" id="run">분석하기</button>
+      <button id="sampleKo">한국어 예시</button>
+      <button id="sampleEn">English sample</button>
+      <button id="clear">지우기</button>
+    </div>
+  </section>
+
+  <div id="result" class="hidden">
+    <section class="card">
+      <h2>② 요약 및 청구항 인용관계</h2>
+      <div class="chips" id="summary"></div>
+      <div class="tree" id="tree" style="margin-top:12px"></div>
+    </section>
+
+    <section class="card">
+      <h2>③ 청구항 구조 분해</h2>
+      <div class="tabs" id="tabs"></div>
+      <div class="legend">
+        <span class="lg-pre">전제부</span><span class="lg-tr">연결부</span>
+        <span class="lg-body">본문</span><span class="lg-end">종결부</span>
+        <span class="lg-mark">권리범위에 영향을 주는 표현</span>
+      </div>
+      <div id="structure"></div>
+    </section>
+
+    <section class="card">
+      <h2>④ 구성요소 분석</h2>
+      <div class="tbl-wrap"><table id="elements"></table></div>
+      <p class="muted">검토 열(O/△/X)과 메모는 대상 기술이나 선행기술과 대비할 때 직접 입력하는 칸입니다.</p>
+    </section>
+
+    <section class="card">
+      <h2>⑤ 구성요소 연결관계</h2>
+      <div id="graph"></div>
+      <p class="muted">화살표는 "뒤 구성요소가 앞 구성요소를 참조함"을 뜻합니다. 예: 상기 ○○부와 연결되어…</p>
+    </section>
+
+    <section class="card">
+      <h2>⑥ 내보내기</h2>
+      <div class="row" style="margin-top:0">
+        <button id="copyMd">Markdown 복사</button>
+        <button id="dlCsv">CSV 다운로드 (Excel용)</button>
+        <span class="muted" id="exportMsg"></span>
+      </div>
+      <p class="notice">이 도구는 규칙을 기반으로 분해하는 보조 도구입니다. 분해 결과, 특히 구성요소의 경계와 명칭은 반드시 사람이 검토해야 하며, 침해·무효·등록 가능성을 판단하지 않습니다.</p>
+    </section>
+  </div>
+</main>
+
+<script id="core">
+/* ===== 핵심 분석 로직 (DOM과 무관한 순수 함수) ===== */
+
+function detectLang(t){
+  const ko=(t.match(/[가-힣]/g)||[]).length;
+  const kana=(t.match(/[぀-ヿ]/g)||[]).length;
+  const han=(t.match(/[一-鿿]/g)||[]).length;
+  const lat=(t.match(/[A-Za-z]/g)||[]).length;
+  if(ko>20 && ko>=kana) return 'ko';
+  if(kana>10) return 'ja';
+  if(han>20 && han>lat/3) return 'zh';
+  return 'en';
+}
+
+function splitClaims(text){
+  const t=text.replace(/\r/g,'').trim();
+  const re=/(?:^|\n)[ \t]*(?:【\s*청구항\s*(\d+)\s*】|\[\s*청구항\s*(\d+)\s*\]|청구항\s*(\d+)\s*[.:：]?|【\s*請求項\s*(\d+)\s*】|請求項\s*(\d+)\s*[.:：]|权利要求\s*(\d+)\s*[.:：]|[Cc]laim\s+(\d+)\s*[.:]|(\d{1,3})\s*[.)．][ \t]+)/g;
+  const hits=[]; let m;
+  while((m=re.exec(t))){ const n=m.slice(1).find(x=>x!==undefined); hits.push({num:+n,start:m.index,bodyStart:m.index+m[0].length}); }
+  if(!hits.length) return [{num:1,text:t}];
+  return hits.map((h,i)=>({num:h.num,text:t.slice(h.bodyStart,i+1<hits.length?hits[i+1].start:t.length).trim()}))
+             .filter(c=>c.text.length>0);
+}
+
+const DEP_RE={
+  ko:/제\s*\d+\s*항(?:\s*(?:내지|~|～|-|,|또는|및)\s*제?\s*\d+\s*항)*/,
+  en:/claims?\s+\d+(?:\s*(?:,|or|and|to|through|-)\s*\d+)*/i,
+  ja:/請求項\s*\d+(?:\s*(?:乃至|～|~|-|、|又は|または|もしくは)\s*\d+)*/,
+  zh:/权利要求\s*\d+(?:\s*(?:至|到|-|～|或|、|和)\s*\d+)*/
+};
+const RANGE_WORD=/내지|~|～|-|to|through|乃至|至|到/i;
+
+function parseDeps(text,lang){
+  const head=text.slice(0,160);
+  const m=head.match(DEP_RE[lang]); if(!m) return [];
+  const region=m[0]; const out=[];
+  const tok=/(\d+)|(내지|~|～|-|to|through|乃至|至|到)/gi; let t, prev=null, range=false;
+  while((t=tok.exec(region))){
+    if(t[1]){ const n=+t[1];
+      if(range && prev!==null){ for(let k=prev+1;k<=n;k++) out.push(k); }
+      else out.push(n);
+      prev=n; range=false;
+    } else if(RANGE_WORD.test(t[2])) range=true;
+  }
+  return [...new Set(out)];
+}
+
+const TRANS={
+  ko:['것을 특징으로 하는','을 특징으로 하는','를 특징으로 하는','을 포함하여 이루어지는','를 포함하여 이루어지는',
+      '을 포함하는','를 포함하는','을 구비하는','를 구비하는','으로 이루어지는','로 이루어지는','으로 구성되는','로 구성되는'],
+  ja:['を備えることを特徴とする','を含むことを特徴とする','を有することを特徴とする','ことを特徴とする','を備える','を備えた','を含む','を有する','からなる'],
+  zh:['其特征在于[，,]?\\s*包括[：:]?','其特征在于[，,]?\\s*包含[：:]?','其特征在于','包括[：:]?','包含[：:]?','由以下组成'],
+  en:['consisting essentially of','consisting of','characterized in that','comprising','comprises','including','includes','composed of','wherein','having']
+};
+
+function findTransition(text,lang){
+  const list=TRANS[lang]; let best=null;
+  if(lang==='ko'||lang==='ja'){
+    // 대상(청구 주제)이 끝에 오는 언어: 문장 끝에 가장 가까운 연결부를 고름
+    for(const p of list){ let i=-1;
+      while((i=text.indexOf(p,i+1))!==-1){
+        const end=i+p.length, rest=text.slice(end).trim();
+        if(rest.length>60) continue;
+        if(!best||end>best.end||(end===best.end&&p.length>best.phrase.length)) best={start:i,end,phrase:p};
+      }
+    }
+  } else {
+    for(const p of list){
+      const re=lang==='en'?new RegExp('\\b'+p+'\\b','i'):new RegExp(p);
+      const m=re.exec(text);
+      if(m&&(!best||m.index<best.start)) best={start:m.index,end:m.index+m[0].length,phrase:m[0]};
+    }
+  }
+  return best;
+}
+
+function decompose(text,lang,isDep){
+  const t=text.replace(/\s+\n/g,'\n').trim();
+  const tr=findTransition(t,lang);
+  let pre='',trans='',body='',end='';
+  if(lang==='ko'||lang==='ja'){
+    const preRe=lang==='ko'?/^[\s\S]*?(?:에\s*있어서|에\s*있어|에\s*따른|으로서|로서)\s*,?/:/^[\s\S]*?(?:において|であって)\s*、?/;
+    const pm=t.match(preRe);
+    let bodyStart=0;
+    if(pm && pm[0].length < (tr?tr.start:t.length) && pm[0].length<200){ pre=pm[0].trim(); bodyStart=pm[0].length; }
+    if(tr){ body=t.slice(bodyStart,tr.start); trans=tr.phrase; end=t.slice(tr.end).trim(); }
+    else body=t.slice(bodyStart);
+  } else {
+    if(tr){ pre=t.slice(0,tr.start).trim(); trans=tr.phrase; body=t.slice(tr.end); }
+    else body=t;
+    const em=body.match(/[.。．]\s*$/); if(em){ end=em[0].trim(); body=body.slice(0,em.index); }
+  }
+  body=body.replace(/^[\s:：,，、]+/,'').trim();
+  return {pre,trans,body,end};
+}
+
+const CONNECTOR=/^(?:및|그리고|또는|and|or|と|及|和|以及)$/i;
+
+function splitElements(body,lang){
+  let parts=body.split(/\s*[;；]\s*|\n+/).map(s=>s.trim()).filter(Boolean);
+  parts=parts.map(s=>s.replace(/^(?:and|or)\s+/i,'').replace(/^(?:및|그리고)\s+/,'').replace(/[,，、]?\s*(?:and|및)?$/i,'').trim())
+             .filter(s=>s && !CONNECTOR.test(s));
+  return parts;
+}
+
+const KO_VERB_END=/(는|은|한|된|할|여|고|를|을|의|에|며|서|로|와|과|가|이)$/;
+const EN_STOP=new Set(['configured','for','that','which','to','having','comprising','comprises','including','includes','disposed',
+  'connected','coupled','mounted','attached','wherein','is','are','being','transmits','transmitting','receives','receiving',
+  'arranged','provided','located','positioned','operable','adapted','in','on','of','with','from','by','and','or']);
+
+function componentName(el,lang){
+  let s=el.replace(/[;；,.，、。]+$/,'').trim();
+  if(lang==='ko'){
+    const sang=s.match(/^상기\s+((?:[^\s]+\s+){0,2}?[^\s]+?)(?:은|는|이|가)\s/);
+    if(sang) return sang[1];
+    s=s.replace(/(?:을|를)$/,'').replace(/\s*(?:및|와|과)$/,'');
+    const step=s.match(/([^\s]+?)(?:하는|되는|는)\s*(단계|과정)$/);
+    if(step) return step[1].replace(/(?:을|를)$/,'')+' '+step[2];
+    const toks=s.split(/\s+/); const name=[toks.pop()];
+    while(toks.length && name.length<3 && !KO_VERB_END.test(toks[toks.length-1])) name.unshift(toks.pop());
+    return name.join(' ').replace(/(?:와|과|를|을)$/,'');
+  }
+  if(lang==='en'){
+    s=s.replace(/^(?:(?:the|said|a|an|one or more|at least one|a plurality of|plurality of)\s+)+/i,'');
+    const words=[];
+    for(const w of s.split(/\s+/)){ const c=w.replace(/[,:;()]/g,'').toLowerCase(); if(EN_STOP.has(c)||!c) break; words.push(w.replace(/[,:;]$/,'')); if(words.length>=4) break; }
+    return words.join(' ')||s.slice(0,30);
+  }
+  if(lang==='zh'){
+    const so=s.match(/^所述(.+?)(?:包括|包含|为|是|采用|设置|用于|与)/); if(so) return so[1];
+    const head=s.split(/[，,、：:]/)[0].trim(); if(head && head.length<=15) return head;
+  }
+  if(lang==='ja'){
+    const zk=s.match(/^前記(.+?)(?:は|が)/); if(zk) return zk[1];
+  }
+  // ja / zh: 마지막 조사·동사 뒤의 명사구를 대략 추출
+  s=s.replace(/(?:と|及び|和|以及)$/,'');
+  const cut=s.split(/[をにがはでの的、，]|する|した|される|用于|用以|所述/);
+  const last=cut[cut.length-1].trim();
+  return (last||s).slice(-12);
+}
+
+const REL_KW={
+  ko:['연결','결합','배치','장착','설치','고정','접촉','수신','송신','전송','전달','변환','제어','감지','측정','공급','생성','저장','표시','판단','산출'],
+  en:['connected','coupled','disposed','mounted','attached','fixed','contact','receive','transmit','send','convert','control','sense','detect','measure','supply','generate','store','display','determine','calculate'],
+  ja:['接続','結合','配置','取り付け','固定','接触','受信','送信','伝達','変換','制御','検知','検出','測定','供給','生成','記憶','表示','判定','算出'],
+  zh:['连接','耦合','设置','安装','固定','接触','接收','发送','传输','转换','控制','感测','检测','测量','供应','生成','存储','显示','判断','计算']
+};
+
+const SCOPE_TERMS=['및/또는','중 적어도 하나','적어도 하나의','적어도 하나','복수의','각각','내지','이상','이하','약 ','실질적으로','만으로','로 이루어지는',
+  'and/or','at least one of','at least one','a plurality of','plurality','each','one or more','substantially','about','approximately','consisting of','only',
+  '少なくとも一つ','少なくとも1つ','複数の','それぞれ','又は','及び','约','至少一个','多个','分别','或'];
+
+function analyze(text){
+  const lang=detectLang(text);
+  const claims=splitClaims(text).map(c=>{
+    const deps=parseDeps(c.text,lang);
+    const parts=decompose(c.text,lang,deps.length>0);
+    const els=splitElements(parts.body,lang).map((raw,i)=>({no:i+1,raw,name:componentName(raw,lang)}));
+    els.forEach(e=>{
+      const low=e.raw.toLowerCase();
+      e.relations=REL_KW[lang].filter(k=>low.includes(k.toLowerCase()));
+      e.refs=els.filter(o=>o!==e && o.name.length>=2 && low.includes(o.name.toLowerCase())).map(o=>o.no);
+      e.scope=SCOPE_TERMS.filter(k=>e.raw.toLowerCase().includes(k.toLowerCase().trim()));
+    });
+    return {num:c.num,text:c.text,deps,independent:deps.length===0,...parts,elements:els};
+  });
+  return {lang,claims};
+}
+
+if(typeof module!=='undefined') module.exports={analyze,splitClaims,parseDeps,decompose,splitElements,componentName,detectLang};
+</script>
+
+<script>
+/* ===== 화면 표시 ===== */
+const $=id=>document.getElementById(id);
+const LANG_NAME={ko:'한국어',en:'영어',ja:'일본어',zh:'중국어'};
+let STATE=null, CUR=0, REVIEW={};
+
+const SAMPLE_KO=`【청구항 1】
+사용자의 체온을 측정하는 웨어러블 장치에 있어서,
+피부에 접촉하여 온도를 감지하는 온도 센서부;
+상기 온도 센서부로부터 수신한 신호를 디지털 데이터로 변환하는 신호 처리부;
+상기 신호 처리부와 연결되어 상기 디지털 데이터를 외부 단말로 송신하는 통신부; 및
+상기 온도 센서부, 상기 신호 처리부 및 상기 통신부 중 적어도 하나에 전원을 공급하는 전원부를 포함하는 웨어러블 체온 측정 장치.
+【청구항 2】
+제1항에 있어서,
+상기 온도 센서부는 복수의 서미스터를 포함하는 것을 특징으로 하는 웨어러블 체온 측정 장치.
+【청구항 3】
+제1항 또는 제2항에 있어서,
+상기 통신부는 블루투스 및/또는 NFC 방식으로 상기 디지털 데이터를 송신하는 것을 특징으로 하는 웨어러블 체온 측정 장치.
+【청구항 4】
+온도 센서부가 사용자의 피부 온도를 감지하는 단계;
+신호 처리부가 감지된 온도 신호를 디지털 데이터로 변환하는 단계; 및
+통신부가 상기 디지털 데이터를 외부 단말로 송신하는 단계를 포함하는 체온 측정 방법.`;
+
+const SAMPLE_EN=`1. A wearable temperature measuring device, comprising:
+a temperature sensor configured to contact skin of a user and sense a temperature;
+a signal processor configured to convert a signal received from the temperature sensor into digital data;
+a communication unit connected to the signal processor and configured to transmit the digital data to an external terminal; and
+a power supply configured to supply power to at least one of the temperature sensor, the signal processor, and the communication unit.
+2. The device of claim 1, wherein the temperature sensor comprises a plurality of thermistors.
+3. The device of claim 1 or 2, wherein the communication unit transmits the digital data via Bluetooth and/or NFC.`;
+
+function esc(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function highlight(s){
+  let h=esc(s);
+  const terms=['및/또는','중 적어도 하나','적어도 하나의','복수의','각각','내지','상기','and/or','at least one of','a plurality of','plurality','each','one or more','substantially','approximately','consisting of','said','少なくとも','複数の','至少一个','多个','所述']
+    .sort((a,b)=>b.length-a.length);
+  const re=new RegExp('('+terms.map(t=>esc(t).replace(/[.*+?^${}()|[\]\\\/]/g,'\\$&')).join('|')+')','gi');
+  return h.replace(re,'<mark>$1</mark>');
+}
+
+function run(){
+  const text=$('input').value.trim();
+  if(!text){ alert('청구항을 입력해 주세요.'); return; }
+  STATE=analyze(text); CUR=0; REVIEW={};
+  $('result').classList.remove('hidden');
+  renderSummary(); renderTabs(); renderClaim();
+  $('result').scrollIntoView({behavior:'smooth'});
+}
+
+function renderSummary(){
+  const c=STATE.claims, ind=c.filter(x=>x.independent).length;
+  $('summary').innerHTML=`<span class="chip">언어 <b>${LANG_NAME[STATE.lang]}</b></span>
+    <span class="chip">청구항 <b>${c.length}</b>개</span>
+    <span class="chip">독립항 <b>${ind}</b>개</span><span class="chip">종속항 <b>${c.length-ind}</b>개</span>`;
+  const byNum={}; c.forEach((x,i)=>byNum[x.num]={...x,idx:i,kids:[]});
+  const roots=[];
+  c.forEach(x=>{ const p=x.deps.find(d=>byNum[d]&&d!==x.num); if(p) byNum[p].kids.push(byNum[x.num]); else roots.push(byNum[x.num]); });
+  const li=n=>`<li><span class="node ${n.independent?'ind':''}" data-idx="${n.idx}">청구항 ${n.num}${n.independent?' (독립)':' ← '+n.deps.join(', ')}</span>${n.kids.length?'<ul>'+n.kids.map(li).join('')+'</ul>':''}</li>`;
+  $('tree').innerHTML='<ul>'+roots.map(li).join('')+'</ul>';
+  $('tree').querySelectorAll('.node').forEach(n=>n.onclick=()=>{CUR=+n.dataset.idx;renderTabs();renderClaim();});
+}
+
+function renderTabs(){
+  $('tabs').innerHTML=STATE.claims.map((c,i)=>`<button class="${i===CUR?'active':''}" data-i="${i}">청구항 ${c.num}</button>`).join('');
+  $('tabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{CUR=+b.dataset.i;renderTabs();renderClaim();});
+  $('tree').querySelectorAll('.node').forEach(n=>n.classList.toggle('active',+n.dataset.idx===CUR));
+}
+
+function renderClaim(){
+  const c=STATE.claims[CUR];
+  const seg=(cls,lab,txt)=>txt?`<div class="seg ${cls}"><span class="lab">${lab}</span>${highlight(txt)}</div>`:'';
+  const endLab=(STATE.lang==='ko'||STATE.lang==='ja')?'종결부 (청구 대상)':'종결부';
+  $('structure').innerHTML=
+    seg('pre','전제부'+(c.independent?'':' (인용 청구항)'),c.pre)+
+    seg('body','본문',c.body)+
+    seg('tr','연결부',c.trans)+
+    seg('end',endLab,c.end);
+  if(STATE.lang==='en'||STATE.lang==='zh'){ // 영·중은 연결부가 본문 앞에 온다
+    const s=$('structure'), tr=s.querySelector('.seg.tr'), body=s.querySelector('.seg.body');
+    if(tr&&body) s.insertBefore(tr,body);
+  }
+  renderTable(c); renderGraph(c);
+}
+
+function renderTable(c){
+  const key=n=>c.num+'-'+n;
+  $('elements').innerHTML=`<tr><th>No</th><th>구성요소</th><th>청구항 원문</th><th>기능·관계 키워드</th><th>참조 구성</th><th>검토</th><th>메모</th></tr>`+
+    c.elements.map(e=>{const r=REVIEW[key(e.no)]||{};return `<tr>
+      <td>${e.no}</td><td class="name">${esc(e.name)}</td><td class="raw">${highlight(e.raw)}</td>
+      <td>${e.relations.map(k=>`<span class="tag">${esc(k)}</span>`).join('')||'<span class="muted">-</span>'}</td>
+      <td>${e.refs.length?e.refs.map(n=>'#'+n).join(', '):'<span class="muted">-</span>'}</td>
+      <td><select data-k="${key(e.no)}" data-f="mark"><option value="">-</option>${['O','△','X'].map(v=>`<option ${r.mark===v?'selected':''}>${v}</option>`).join('')}</select></td>
+      <td><input type="text" data-k="${key(e.no)}" data-f="memo" value="${esc(r.memo||'')}" placeholder="대응 구성·근거"></td></tr>`}).join('');
+  $('elements').querySelectorAll('[data-k]').forEach(el=>el.oninput=el.onchange=()=>{
+    const k=el.dataset.k; REVIEW[k]=REVIEW[k]||{}; REVIEW[k][el.dataset.f]=el.value; });
+}
+
+function renderGraph(c){
+  const els=c.elements;
+  if(!els.length){ $('graph').innerHTML='<p class="muted">추출된 구성요소가 없습니다.</p>'; return; }
+  const W=640, H=els.length>4?400:300, cx=W/2, cy=H/2, R=Math.min(W,H)/2-60;
+  const pos=els.map((e,i)=>{const a=-Math.PI/2+2*Math.PI*i/els.length; return {x:els.length===1?cx:cx+R*Math.cos(a), y:els.length===1?cy:cy+R*Math.sin(a)};});
+  const css=getComputedStyle(document.documentElement);
+  const ink=css.getPropertyValue('--ink'), line=css.getPropertyValue('--sub'), fill=css.getPropertyValue('--body'), stroke=css.getPropertyValue('--body-b');
+  let edges='';
+  els.forEach((e,i)=>e.refs.forEach(n=>{ const j=n-1, a=pos[i], b=pos[j];
+    const dx=b.x-a.x, dy=b.y-a.y, d=Math.hypot(dx,dy)||1, off=46;
+    edges+=`<line x1="${a.x+dx/d*off}" y1="${a.y+dy/d*off}" x2="${b.x-dx/d*off}" y2="${b.y-dy/d*off}" stroke="${line}" stroke-width="1.5" marker-end="url(#arr)"/>`; }));
+  const nodes=els.map((e,i)=>{const p=pos[i], label=e.name.length>10?e.name.slice(0,10)+'…':e.name;
+    return `<g><rect x="${p.x-62}" y="${p.y-22}" width="124" height="44" rx="10" fill="${fill}" stroke="${stroke}"/>
+      <text x="${p.x}" y="${p.y-4}" text-anchor="middle" font-size="11" fill="${line}">#${e.no}</text>
+      <text x="${p.x}" y="${p.y+13}" text-anchor="middle" font-size="13" font-weight="600" fill="${ink}">${esc(label)}</text></g>`;}).join('');
+  $('graph').innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="구성요소 연결관계도">
+    <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="${line}"/></marker></defs>
+    ${edges}${nodes}</svg>`;
+}
+
+function rows(){
+  const out=[];
+  STATE.claims.forEach(c=>c.elements.forEach(e=>{const r=REVIEW[c.num+'-'+e.no]||{};
+    out.push({claim:c.num,type:c.independent?'독립':'종속('+c.deps.join(',')+')',no:e.no,name:e.name,raw:e.raw,
+      rel:e.relations.join(' '),refs:e.refs.map(n=>'#'+n).join(' '),mark:r.mark||'',memo:r.memo||''});}));
+  return out;
+}
+function toMarkdown(){
+  let md='';
+  STATE.claims.forEach(c=>{
+    md+=`## 청구항 ${c.num} (${c.independent?'독립항':'종속항 ← '+c.deps.join(', ')})\n\n`;
+    md+=`- 전제부: ${c.pre||'-'}\n- 연결부: ${c.trans||'-'}\n- 종결부: ${c.end||'-'}\n\n`;
+    md+='| No | 구성요소 | 원문 | 참조 | 검토 | 메모 |\n|---|---|---|---|---|---|\n';
+    rows().filter(r=>r.claim===c.num).forEach(r=>md+=`| ${r.no} | ${r.name} | ${r.raw.replace(/\|/g,'\\|').replace(/\n/g,' ')} | ${r.refs||'-'} | ${r.mark||'-'} | ${r.memo||''} |\n`);
+    md+='\n';
+  });
+  return md;
+}
+function toCSV(){
+  const q=v=>'"'+String(v).replace(/"/g,'""').replace(/\n/g,' ')+'"';
+  const head=['청구항','구분','No','구성요소','원문','기능·관계','참조','검토','메모'];
+  return '﻿'+[head.map(q).join(',')].concat(rows().map(r=>[r.claim,r.type,r.no,r.name,r.raw,r.rel,r.refs,r.mark,r.memo].map(q).join(','))).join('\r\n');
+}
+
+$('run').onclick=run;
+$('sampleKo').onclick=()=>{$('input').value=SAMPLE_KO;run();};
+$('sampleEn').onclick=()=>{$('input').value=SAMPLE_EN;run();};
+$('clear').onclick=()=>{$('input').value='';$('result').classList.add('hidden');};
+$('copyMd').onclick=async()=>{
+  try{ await navigator.clipboard.writeText(toMarkdown()); $('exportMsg').textContent='복사했습니다.'; }
+  catch(e){ $('exportMsg').textContent='복사할 수 없는 환경입니다.'; }
+};
+$('dlCsv').onclick=()=>{
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([toCSV()],{type:'text/csv;charset=utf-8'}));
+  a.download='claim_elements.csv'; a.click(); URL.revokeObjectURL(a.href);
+};
+</script>
+</body>
+</html>
