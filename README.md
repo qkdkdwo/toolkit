@@ -16,7 +16,7 @@
 
 ## 청구항 분해·시각화 도구
 
-- 온라인 데모: GitHub Pages가 켜져 있으면 `https://qkdkdwo.github.io/toolkit/tools/claim-visualizer/` 에서 바로 사용할 수 있습니다.
+- 온라인 데모: https://qkdkdwo.github.io/toolkit/tools/claim-visualizer/
 - 로컬 사용: `tools/claim-visualizer/index.html` 파일을 내려받아 브라우저로 열면 됩니다.
 - 입력한 청구항은 브라우저 안에서만 처리되며 외부로 전송되지 않습니다.
 
