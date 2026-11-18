@@ -43,16 +43,17 @@ test('영어: 구조 분해와 범위 인용', () => {
 });
 
 test('일본어: 연결부와 구성요소', () => {
-  const r = analyze('【請求項1】\nユーザの体温を測定する装置であって、\n皮膚に接触して温度を検知する温度センサ部と、\n前記温度センサ部から受信した信号を変換する信号処理部と、\nを備えることを特徴とする体温測定装置。\n【請求項2】\n請求項1において、前記温度センサ部は複数のサーミスタを含むことを特徴とする体温測定装置。');
+  const r = analyze('【請求項1】\n紙束を綴じるステープラであって、\n複数のステープルを収納するマガジン部と、\n前記マガジン部の上部に配置され、押圧時に前記ステープルを下方に射出する打出部と、\nを備えることを特徴とするステープラ。\n【請求項2】\n請求項1において、前記マガジン部は前記ステープルを付勢するばねを含むことを特徴とするステープラ。');
   assert.strictEqual(r.lang, 'ja');
-  assert.deepStrictEqual(names(r.claims[0]), ['温度センサ部', '信号処理部']);
+  assert.deepStrictEqual(names(r.claims[0]), ['マガジン部', '打出部']);
+  assert.deepStrictEqual(r.claims[0].elements[1].refs, [1]);
   assert.deepStrictEqual(r.claims[1].deps, [1]);
 });
 
 test('중국어: 연결부와 구성요소', () => {
-  const r = analyze('权利要求1. 一种体温测量装置，其特征在于，包括：\n温度传感器，用于感测温度；\n信号处理器，与所述温度传感器连接，用于转换信号。\n权利要求2. 根据权利要求1所述的装置，其特征在于，所述温度传感器包括多个热敏电阻。');
+  const r = analyze('权利要求1. 一种订书机，其特征在于，包括：\n钉匣，用于容纳多个订书钉；\n推钉器，设置在所述钉匣内，用于推动所述订书钉。\n权利要求2. 根据权利要求1所述的订书机，其特征在于，所述推钉器包括弹簧。');
   assert.strictEqual(r.lang, 'zh');
-  assert.deepStrictEqual(names(r.claims[0]), ['温度传感器', '信号处理器']);
+  assert.deepStrictEqual(names(r.claims[0]), ['钉匣', '推钉器']);
   assert.deepStrictEqual(r.claims[1].deps, [1]);
 });
 
@@ -63,17 +64,17 @@ test('유형 주의: 정상 청구항에는 경고 없음', () => {
 });
 
 test('유형 주의: 방법 표제인데 단계가 없음', () => {
-  const c = analyze('【청구항 1】\n온도를 감지하는 센서부;\n신호를 처리하는 처리부를 포함하는 체온 측정 방법.').claims[0];
+  const c = analyze('【청구항 1】\n스테이플을 수납하는 매거진부;\n스테이플을 타출하는 타출부를 포함하는 스테이플링 방법.').claims[0];
   assert.ok(c.warning && c.warning.includes('방법'));
 });
 
 test('유형 주의: 장치 표제인데 단계로만 구성', () => {
-  const c = analyze('1. A device, comprising:\nsensing a temperature;\nconverting the temperature into data.').claims[0];
+  const c = analyze('1. A stapler, comprising:\nloading staples into a magazine;\ndriving a staple into a stack of paper.').claims[0];
   assert.ok(c.warning && c.warning.includes('장치'));
 });
 
 test('원문 불명확: 연결부를 찾지 못한 청구항', () => {
-  const c = analyze('【청구항 1】\n센서와 처리기로 이루어진 장치').claims[0];
+  const c = analyze('【청구항 1】\n매거진과 타출판으로 이루어진 스테이플러').claims[0];
   assert.strictEqual(c.unclear, true);
   assert.strictEqual(analyze(sample('SAMPLE_KO')).claims[0].unclear, false);
 });
