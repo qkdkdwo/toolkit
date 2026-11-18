@@ -1,5 +1,7 @@
 # Patent Analysis Toolkit
 
+[![tests](https://github.com/qkdkdwo/toolkit/actions/workflows/test.yml/badge.svg)](https://github.com/qkdkdwo/toolkit/actions/workflows/test.yml)
+
 특허 조사·분석 실무에서 반복해서 쓰는 도구, 프롬프트, 방법론을 모아 두는 저장소입니다.
 모든 예시 데이터는 직접 만든 가상 청구항이거나 공개 특허를 바탕으로 하며, 고객사 정보나 상용 DB 원데이터는 포함하지 않습니다.
 
@@ -29,6 +31,8 @@
 ```bash
 node tests/claim-visualizer.test.js
 ```
+
+`main` 브랜치에 올리거나 Pull Request를 만들 때마다 GitHub Actions가 이 테스트를 자동으로 실행합니다.
 
 ## 라이선스
 
