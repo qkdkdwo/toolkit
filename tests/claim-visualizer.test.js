@@ -78,4 +78,12 @@ test('원문 불명확: 연결부를 찾지 못한 청구항', () => {
   assert.strictEqual(analyze(sample('SAMPLE_KO')).claims[0].unclear, false);
 });
 
+test('구성요소 기호: 청구항마다 a부터 시작', () => {
+  const r = analyze(sample('SAMPLE_KO'));
+  assert.deepStrictEqual(r.claims[0].elements.map(e => e.sym), ['a', 'b', 'c', 'd']);
+  assert.deepStrictEqual(r.claims[3].elements.map(e => e.sym), ['a', 'b', 'c']);
+  const many = analyze('1. A device comprising:\n' + Array.from({ length: 28 }, (_, i) => `a part${i}`).join(';\n') + '.');
+  assert.deepStrictEqual(many.claims[0].elements.slice(25, 28).map(e => e.sym), ['z', 'aa', 'ab']);
+});
+
 console.log(`\n${passed}개 테스트 통과`);

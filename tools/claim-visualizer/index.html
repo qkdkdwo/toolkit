@@ -97,8 +97,8 @@
     <textarea id="input" placeholder="【청구항 1】 ... 형식 또는 1. ... 형식으로 붙여 넣으세요. 한국어·영어·중국어·일본어를 지원합니다."></textarea>
     <div class="row">
       <button class="primary" id="run">분석하기</button>
-      <button id="sampleKo">한국어 예시</button>
-      <button id="sampleEn">English sample</button>
+      <button id="sampleKo">가상 예시 (한국어)</button>
+      <button id="sampleEn">Fictional sample (EN)</button>
       <button id="clear">지우기</button>
     </div>
   </section>
@@ -317,12 +317,15 @@ function typeWarning(lang,parts,els){
   return null;
 }
 
+// 공통 기준: 구성요소 기호는 a, b, c … (청구항마다 a부터), 26개를 넘으면 aa, ab …
+function symbol(i){ let s=''; i++; while(i>0){ i--; s=String.fromCharCode(97+i%26)+s; i=Math.floor(i/26);} return s; }
+
 function analyze(text){
   const lang=detectLang(text);
   const claims=splitClaims(text).map(c=>{
     const deps=parseDeps(c.text,lang);
     const parts=decompose(c.text,lang,deps.length>0);
-    const els=splitElements(parts.body,lang).map((raw,i)=>({no:i+1,raw,name:componentName(raw,lang)}));
+    const els=splitElements(parts.body,lang).map((raw,i)=>({no:i+1,sym:symbol(i),raw,name:componentName(raw,lang)}));
     els.forEach(e=>{
       const low=e.raw.toLowerCase();
       e.relations=REL_KW[lang].filter(k=>low.includes(k.toLowerCase()));
@@ -432,9 +435,9 @@ function links(c,e){ return e.refs.map(n=>`${c.elements[n-1].name} → ${e.name}
 
 function renderTable(c){
   const key=n=>c.num+'-'+n;
-  $('elements').innerHTML=`<tr><th>No</th><th>구성요소</th><th>청구항 원문</th><th>기능·관계 키워드</th><th>연결관계</th><th>검토</th><th>메모</th></tr>`+
+  $('elements').innerHTML=`<tr><th>기호</th><th>구성요소</th><th>청구항 원문</th><th>기능·관계 키워드</th><th>연결관계</th><th>검토</th><th>메모</th></tr>`+
     c.elements.map(e=>{const r=REVIEW[key(e.no)]||{};return `<tr>
-      <td>${e.no}</td><td class="name">${esc(e.name)}${e.unclear?'<br><span class="tag unclear">(원문 불명확)</span>':''}</td><td class="raw">${highlight(e.raw)}</td>
+      <td><b>${e.sym}</b></td><td class="name">${esc(e.name)}${e.unclear?'<br><span class="tag unclear">(원문 불명확)</span>':''}</td><td class="raw">${highlight(e.raw)}</td>
       <td>${e.relations.map(k=>`<span class="tag">${esc(k)}</span>`).join('')||'<span class="muted">-</span>'}</td>
       <td>${links(c,e).map(esc).join('<br>')||'<span class="muted">-</span>'}</td>
       <td><select data-k="${key(e.no)}" data-f="mark"><option value="">-</option>${['O','△','X'].map(v=>`<option ${r.mark===v?'selected':''}>${v}</option>`).join('')}</select></td>
@@ -456,7 +459,7 @@ function renderGraph(c){
     edges+=`<line x1="${a.x+dx/d*off}" y1="${a.y+dy/d*off}" x2="${b.x-dx/d*off}" y2="${b.y-dy/d*off}" stroke="${line}" stroke-width="1.5" marker-end="url(#arr)"/>`; }));
   const nodes=els.map((e,i)=>{const p=pos[i], label=e.name.length>10?e.name.slice(0,10)+'…':e.name;
     return `<g><rect x="${p.x-62}" y="${p.y-22}" width="124" height="44" rx="10" fill="${fill}" stroke="${stroke}"/>
-      <text x="${p.x}" y="${p.y-4}" text-anchor="middle" font-size="11" fill="${line}">#${e.no}</text>
+      <text x="${p.x}" y="${p.y-4}" text-anchor="middle" font-size="11" fill="${line}">구성 ${e.sym}</text>
       <text x="${p.x}" y="${p.y+13}" text-anchor="middle" font-size="13" font-weight="600" fill="${ink}">${esc(label)}</text></g>`;}).join('');
   $('graph').innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="구성요소 연결관계도">
     <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="${line}"/></marker></defs>
@@ -466,7 +469,7 @@ function renderGraph(c){
 function rows(){
   const out=[];
   STATE.claims.forEach(c=>c.elements.forEach(e=>{const r=REVIEW[c.num+'-'+e.no]||{};
-    out.push({claim:c.num,type:c.independent?'독립':'종속('+c.deps.join(',')+')',no:e.no,
+    out.push({claim:c.num,type:c.independent?'독립':'종속('+c.deps.join(',')+')',no:e.no,sym:e.sym,
       name:e.name+(e.unclear?' (원문 불명확)':''),raw:e.raw,
       rel:e.relations.join(' '),refs:links(c,e).join('; '),mark:r.mark||'',memo:r.memo||''});}));
   return out;
@@ -477,16 +480,16 @@ function toMarkdown(){
     md+=`## 청구항 ${c.num} (${c.independent?'독립항':'종속항 ← '+c.deps.join(', ')})\n\n`;
     if(c.warning) md+=`> ⚠ 청구항 유형 주의 — ${c.warning}\n\n`;
     md+=`- 전제부: ${c.pre||'-'}\n- 연결부: ${c.trans||'(원문 불명확)'}\n- 종결부: ${c.end||'-'}\n\n`;
-    md+='| No | 구성요소 | 원문 | 연결관계 | 검토 | 메모 |\n|---|---|---|---|---|---|\n';
-    rows().filter(r=>r.claim===c.num).forEach(r=>md+=`| ${r.no} | ${r.name} | ${r.raw.replace(/\|/g,'\\|').replace(/\n/g,' ')} | ${r.refs||'-'} | ${r.mark||'-'} | ${r.memo||''} |\n`);
+    md+='| 기호 | 구성요소 | 원문 | 연결관계 | 검토 | 메모 |\n|---|---|---|---|---|---|\n';
+    rows().filter(r=>r.claim===c.num).forEach(r=>md+=`| ${r.sym} | ${r.name} | ${r.raw.replace(/\|/g,'\\|').replace(/\n/g,' ')} | ${r.refs||'-'} | ${r.mark||'-'} | ${r.memo||''} |\n`);
     md+='\n';
   });
   return md;
 }
 function toCSV(){
   const q=v=>'"'+String(v).replace(/"/g,'""').replace(/\n/g,' ')+'"';
-  const head=['청구항','구분','No','구성요소','원문','기능·관계','연결관계','검토','메모'];
-  return '﻿'+[head.map(q).join(',')].concat(rows().map(r=>[r.claim,r.type,r.no,r.name,r.raw,r.rel,r.refs,r.mark,r.memo].map(q).join(','))).join('\r\n');
+  const head=['청구항','구분','기호','구성요소','원문','기능·관계','연결관계','검토','메모'];
+  return '﻿'+[head.map(q).join(',')].concat(rows().map(r=>[r.claim,r.type,r.sym,r.name,r.raw,r.rel,r.refs,r.mark,r.memo].map(q).join(','))).join('\r\n');
 }
 
 $('run').onclick=run;

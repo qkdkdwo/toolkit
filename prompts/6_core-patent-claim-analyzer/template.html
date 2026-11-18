@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>청구항 대비 분석 — {발명의 명칭}</title>
+<style>
+  :root { box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  *, *::before, *::after { box-sizing: inherit; }
+  body { font-family: 'Segoe UI', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; background: #f8f9fa;
+         margin: 0; padding: 24px; color: #1a1a2e; word-break: keep-all; overflow-wrap: anywhere; }
+  .wrap { max-width: 980px; margin: 0 auto; }
+
+  /* 상단 */
+  .page-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+  .page-title { font-size: 20px; font-weight: 700; margin: 0; line-height: 1.4; }
+  .page-sub { font-size: 13px; color: #666; margin-top: 4px; }
+  .copy-btn { flex: none; padding: 7px 16px; background: #1565c0; color: #fff;
+              border: none; border-radius: 8px; font-size: 13px; cursor: pointer; }
+  .meta-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+  .tag { padding: 5px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+  .tag-lang   { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+  .tag-type   { background: #e3f2fd; color: #1565c0; border: 1px solid #90caf9; }
+  .tag-info   { background: #f3e5f5; color: #6a1b9a; border: 1px solid #ce93d8; }
+  .tag-key    { background: #fff3e0; color: #e65100; border: 1px solid #ffcc80; }
+  .warn { background: #fff8e1; border: 1px solid #ffe082; color: #6d4c00; border-radius: 8px;
+          padding: 10px 14px; font-size: 13.5px; margin: 10px 0; }
+
+  /* 섹션 제목 */
+  .section-title { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 700;
+                   margin: 34px 0 14px; padding-bottom: 8px; border-bottom: 2px solid #e0e0e0; }
+  .section-num { flex: none; width: 26px; height: 26px; border-radius: 50%; background: #1565c0; color: #fff;
+                 display: inline-flex; align-items: center; justify-content: center; font-size: 13px; }
+  .section-label { font-size: 13px; color: #555; margin-bottom: 14px; }
+
+  /* 1. 청구항 분석 표 */
+  .legend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; font-size: 12px; color: #555; margin-bottom: 10px; }
+  .table-wrap { background: #fff; border-radius: 12px; border: 1px solid #e0e0e0; overflow-x: auto;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+  .claim-table { width: 100%; min-width: 700px; border-collapse: collapse; font-size: 13.5px; }
+  .claim-table th { background: #e3f2fd; color: #1565c0; text-align: left; padding: 10px 12px; font-size: 13px; white-space: nowrap; }
+  .claim-table td { padding: 10px 12px; border-top: 1px solid #eee; vertical-align: top; line-height: 1.65; }
+  .claim-table .c-claim { width: 170px; font-weight: 600; color: #333; }
+  .claim-table .c-comp  { width: 70px; text-align: center; font-weight: 700; color: #1565c0; }
+  .claim-table .c-body  { width: 38%; }
+  .mark { display: inline-block; min-width: 28px; text-align: center; padding: 1px 8px; border-radius: 12px;
+          font-size: 12px; font-weight: 700; margin-right: 6px; }
+  .mark-o { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+  .mark-t { background: #fff3e0; color: #e65100; border: 1px solid #ffcc80; }
+  .mark-x { background: #eceff1; color: #546e7a; border: 1px solid #b0bec5; }
+
+  /* 2. 구성요소 시각화 */
+  .summary-card { background: #fff; border-radius: 12px; border-left: 4px solid #1565c0;
+                  padding: 18px 22px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
+  .summary-card h3 { margin: 0 0 10px; font-size: 15px; color: #1565c0; }
+  .summary-card p  { margin: 0; font-size: 14px; line-height: 1.75; }
+  .struct { background: #fff; border-radius: 12px; border: 1px solid #e0e0e0; margin-bottom: 24px; overflow: hidden; }
+  .struct div { display: flex; gap: 12px; padding: 9px 16px; font-size: 13.5px; line-height: 1.6; border-top: 1px solid #f0f0f0; }
+  .struct div:first-child { border-top: none; }
+  .struct b { flex: none; width: 56px; color: #1565c0; }
+  .component-card { background: #fff; border-radius: 12px; border: 1px solid #e0e0e0;
+                    padding: 18px 22px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+  .comp-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .comp-badge { background: #e3f2fd; color: #1565c0; border-radius: 20px;
+                padding: 3px 12px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+  .comp-name  { font-size: 17px; font-weight: 700; color: #1a1a2e; }
+  .comp-orig  { font-size: 12px; color: #888; margin-top: 1px; font-style: italic; }
+  .comp-desc  { font-size: 14px; line-height: 1.75; color: #333; margin-bottom: 12px; }
+  .comp-relation { font-size: 13px; color: #555; background: #f5f5f5; border-radius: 6px; padding: 8px 12px; }
+  .comp-relation span { font-weight: 600; color: #1565c0; }
+  .feature-summary { background: #fff; border-radius: 12px; border-left: 4px solid #6a1b9a;
+                     padding: 18px 22px; margin-top: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
+  .feature-summary h3 { margin: 0 0 10px; font-size: 15px; color: #6a1b9a; }
+  .feature-summary p  { margin: 0; font-size: 14px; line-height: 1.75; }
+
+  /* 3. 청구항 기술 요약 */
+  .brief-card { background: #fff; border-radius: 12px; border-left: 4px solid #2e7d32;
+                padding: 18px 22px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
+  .brief-card p { margin: 0; font-size: 15px; line-height: 1.8; font-weight: 500; }
+
+  /* 4. 공통점 및 차이점 */
+  .compare-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+  .compare-card { background: #fff; border-radius: 12px; border-top: 4px solid #2e7d32;
+                  padding: 18px 22px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
+  .compare-card.diff { border-top-color: #e65100; }
+  .compare-card h3 { margin: 0 0 10px; font-size: 15px; color: #2e7d32; }
+  .compare-card.diff h3 { color: #e65100; }
+  .compare-card ul { margin: 0; padding-left: 18px; font-size: 14px; line-height: 1.75; }
+  .compare-card li { margin-bottom: 6px; }
+
+  /* 5. 검토 의견 */
+  .opinion-card { background: #fff; border-radius: 12px; border-left: 4px solid #6a1b9a;
+                  padding: 18px 22px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
+  .opinion-card h3 { margin: 0 0 10px; font-size: 15px; color: #6a1b9a; }
+  .opinion-card p  { margin: 0; font-size: 14px; line-height: 1.75; }
+  .opinion-card.basis { border-left-color: #1565c0; }
+  .opinion-card.basis h3 { color: #1565c0; }
+  .disclaimer { font-size: 12.5px; color: #666; border-top: 1px solid #e0e0e0; margin-top: 28px; padding-top: 12px; }
+
+  @media (max-width: 560px) {
+    body { padding: 16px; }
+    .page-head { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<!-- 상단: 제목 + 메타 태그 -->
+<div class="page-head">
+  <div>
+    <h1 class="page-title">청구항 대비 분석 — {발명의 명칭 (확인 불가 시 청구 대상 명칭)}</h1>
+    <div class="page-sub">분석 대상: {분석한 청구항 범위 (예: 청구항 1~10)} / 대비 대상: {기업 보유 기술 명칭}</div>
+  </div>
+  <button class="copy-btn" onclick="copyAll()">전체 복사</button>
+</div>
+<div class="meta-tags">
+  <span class="tag tag-lang">{감지 언어}</span>
+  <span class="tag tag-type">{청구항 유형 (예: 독립항 (장치청구항))}</span>
+  <!-- [META TAGS HERE] : 청구항 주요 특징 3~4개를 tag-info, tag-key 클래스로 교차 추가 -->
+  <span class="tag tag-info">{특징 태그 1}</span>
+  <span class="tag tag-key">{특징 태그 2}</span>
+</div>
+<!-- [TYPE WARNING] : 청구 대상(표제)과 본문 구성이 맞지 않을 때만 출력, 아니면 이 div 삭제 -->
+<div class="warn">⚠ 청구항 유형 주의 — {사유 (예: 표제는 방법인데 본문에 단계가 없음)}</div>
+
+<!-- ===== 섹션 1. 청구항 분석 ===== -->
+<h2 class="section-title"><span class="section-num">1</span>청구항 분석</h2>
+<div class="legend">
+  <span><span class="mark mark-o">O</span>사실상 동일</span>
+  <span><span class="mark mark-t">△</span>일부 대응 (차이 있음·확인 어려움)</span>
+  <span><span class="mark mark-x">X</span>대응 없음</span>
+</div>
+<div class="table-wrap">
+  <table class="claim-table">
+    <thead>
+      <tr><th>청구항</th><th>구성요소</th><th>내용</th><th>검토의견</th></tr>
+    </thead>
+    <tbody>
+      <!-- [CLAIM ROWS HERE] : 전체 청구항의 구성요소 수만큼 행 반복. 청구항 셀은 병합하지 않고 각 행에 반복 기재 -->
+      <tr>
+        <td class="c-claim">{청구항 N (독립항 또는 청구항 M의 종속항)}</td>
+        <td class="c-comp">{a}</td>
+        <td class="c-body">{구성요소 내용 (한국어). 발명의 설명 참조 시 말미에 "(발명의 설명 참조)", 불분명하면 "(원문 불명확)"}</td>
+        <td><span class="mark {mark-o | mark-t | mark-x}">{O | △ | X}</span>{근거 설명}</td>
+      </tr>
+      <!-- /CLAIM ROWS -->
+    </tbody>
+  </table>
+</div>
+
+<!-- ===== 섹션 2. 구성요소 시각화 분석 ===== -->
+<h2 class="section-title"><span class="section-num">2</span>구성요소 시각화 분석 — {분석 대상 청구항 (예: 청구항 1)}</h2>
+<div class="summary-card">
+  <h3>청구항 요약</h3>
+  <p>{청구항 전체 내용을 1~2문장으로 요약}</p>
+</div>
+<div class="section-label">구조 분해 (전제부·연결부·본문·종결부, 특징부 = 연결부 + 본문)</div>
+<div class="struct">
+  <div><b>전제부</b><span>{전제부 원문. 없으면 "해당 없음"}</span></div>
+  <div><b>연결부</b><span>{연결부 원문 (예: 포함하는, comprising)}</span></div>
+  <div><b>본문</b><span>{구성요소 a ~ n (아래 카드 참조)}</span></div>
+  <div><b>종결부</b><span>{종결부 원문 (한국어·일본어는 문장 끝의 청구 대상). 없으면 "해당 없음"}</span></div>
+</div>
+
+<!-- [COMPONENT CARDS HERE] : 아래 카드를 구성요소 수만큼 반복 -->
+<div class="component-card">
+  <div class="comp-header">
+    <span class="comp-badge">구성 {a}</span>
+    <div>
+      <div class="comp-name">{구성요소 한글 명칭}</div>
+      <div class="comp-orig">{원문 용어 그대로}</div>
+    </div>
+  </div>
+  <div class="comp-desc">{기능 및 역할: 2~3문장으로 이 구성요소가 무엇을 하는지 설명}</div>
+  <div class="comp-relation"><span>연결관계:</span> {A → B (관계의 성격). 없으면 "해당 없음"}</div>
+</div>
+<!-- /COMPONENT CARDS -->
+
+<div class="feature-summary">
+  <h3>핵심 특징 요약</h3>
+  <p>{청구항의 특징부(연결부 + 본문) 또는 발명의 핵심 포인트를 2~4문장으로 서술}</p>
+</div>
+
+<!-- ===== 섹션 3. 청구항 기술 요약 ===== -->
+<h2 class="section-title"><span class="section-num">3</span>청구항 기술 요약</h2>
+<div class="brief-card">
+  <p>{청구항의 핵심 기술 사상과 목적을 2줄 이하로 요약}</p>
+</div>
+
+<!-- ===== 섹션 4. 공통점 및 차이점 검토 ===== -->
+<h2 class="section-title"><span class="section-num">4</span>공통점 및 차이점 검토</h2>
+<div class="compare-grid">
+  <div class="compare-card common">
+    <h3>공통점</h3>
+    <ul>
+      <!-- 항목 수만큼 li 반복 -->
+      <li>{기업 보유 기술과 일치하거나 실질적으로 동일하게 구현되는 기술적 특징 (관련 구성요소 기호 병기, 예: 1a)}</li>
+    </ul>
+  </div>
+  <div class="compare-card diff">
+    <h3>차이점</h3>
+    <ul>
+      <!-- 항목 수만큼 li 반복 -->
+      <li>{청구항에만 존재하는 구성요소, 또는 구조적·방식적·목적상 차이점 (관련 구성요소 기호 병기)}</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ===== 섹션 5. 검토 의견 제시 ===== -->
+<h2 class="section-title"><span class="section-num">5</span>검토 의견 제시</h2>
+
+<!-- [OPINION CARDS HERE] : 침해 리스크 / 회피 설계 / 개량 방안 중 유의미한 항목 수만큼 카드 반복 -->
+<div class="opinion-card">
+  <h3>{검토 항목명 (예: 침해 리스크 (문언·균등) / 회피 설계 방향 / 기업 기술 개량 방안)}</h3>
+  <p>{4단계 대비 결과에 근거한 실무적 전략 의견}</p>
+</div>
+<!-- /OPINION CARDS -->
+
+<div class="opinion-card basis">
+  <h3>균등 침해 판단 해석 근거 (발명의 설명 기반)</h3>
+  <p>{발명의 설명에서 확인된 핵심 효과 또는 필수 구성과, 이에 따른 균등 침해 리스크 판단의 추가 해석 근거. 발명의 설명이 없으면 "발명의 설명 미제공으로 판단 보류"}</p>
+</div>
+
+<p class="disclaimer">본 결과는 기술 대비와 전략 검토를 위한 분석 지원 자료이며, 최종 법률 판단이 아닙니다.</p>
+
+</div>
+
+<script>
+function copyAll() {
+  const el = document.body.innerText;
+  try {
+    navigator.clipboard.writeText(el).then(() => alert('복사되었습니다.'))
+      .catch(() => alert('복사 권한이 없습니다. 직접 선택하여 복사해 주세요.'));
+  } catch (e) {
+    alert('복사 권한이 없습니다. 직접 선택하여 복사해 주세요.');
+  }
+}
+</script>
+</body>
+</html>
