@@ -15,8 +15,8 @@
 |---|---|---|
 | `tools/claim-visualizer/` | 청구항 분해·시각화 도구 (HTML 한 파일, 설치 불필요) | 공개 |
 | `tests/` | 도구의 분해 결과를 확인하는 회귀 테스트 | 공개 |
-| `prompts/5_claim-component-analyzer/` | 청구항 구성요소 분석기 프롬프트 v2.1 (Claude·ChatGPT 공용) | 공개 |
-| `prompts/6_core-patent-claim-analyzer/` | 핵심특허 청구항 분석기 프롬프트 v2 + HTML 템플릿 | 공개 |
+| `prompts/claim-component-analyzer/` | 청구항 구성요소 분석기 프롬프트 (Claude·ChatGPT 공용) | 공개 |
+| `prompts/core-patent-claim-analyzer/` | 핵심특허 청구항 분석기 프롬프트 + HTML 템플릿 | 공개 |
 | `prompts/` (그 외) | 테크트리, 검색식, 노이즈 제거, 등급분류, 선행기술조사 프롬프트 | 준비 중 |
 | `docs/claim-analysis-standard.md` | 청구항 분석 공통 기준 (도구와 프롬프트가 함께 따름) | 공개 |
 | `docs/analysis-principles.md` | 특허 분석 공통 원칙 (사실과 근거, IPC/CPC·검색 키워드, 선행기술 대비, Excel 요약, 검증) | 공개 |
