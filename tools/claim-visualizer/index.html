@@ -79,6 +79,10 @@
   .muted{color:var(--sub);font-size:12.5px}
   .notice{font-size:12.5px;color:var(--sub);border-top:1px solid var(--line);padding-top:12px;margin-top:8px}
   .hidden{display:none}
+  .warn{background:#fff6d6;border:1px solid #e8c95a;color:#5c4a00;border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:13.5px}
+  @media (prefers-color-scheme: dark){ .warn{background:#3a3214;border-color:#8a7425;color:#f0dc9a} }
+  .tag.unclear{background:#fff6d6;border-color:#e8c95a;color:#5c4a00}
+  .criteria{font-size:12.5px;color:var(--sub);margin:8px 0 0;padding-left:18px}
 </style>
 </head>
 <body>
@@ -120,13 +124,18 @@
     <section class="card">
       <h2>④ 구성요소 분석</h2>
       <div class="tbl-wrap"><table id="elements"></table></div>
-      <p class="muted">검토 열(O/△/X)과 메모는 대상 기술이나 선행기술과 대비할 때 직접 입력하는 칸입니다.</p>
+      <p class="muted">검토 열(O/△/X)과 메모는 과제 기술이나 선행기술과 대비할 때 직접 입력하는 칸입니다. 기술적 대응 여부만 표시하며, 법적 판단이 아닙니다.</p>
+      <ul class="criteria">
+        <li><b>O</b> 대응 구성이 자료에 명확히 있음</li>
+        <li><b>△</b> 유사하거나 일부만 대응함, 또는 자료만으로 확인이 어려움 (애매하면 △)</li>
+        <li><b>X</b> 대응 구성이 없음이 자료로 분명함</li>
+      </ul>
     </section>
 
     <section class="card">
       <h2>⑤ 구성요소 연결관계</h2>
       <div id="graph"></div>
-      <p class="muted">화살표는 "뒤 구성요소가 앞 구성요소를 참조함"을 뜻합니다. 예: 상기 ○○부와 연결되어…</p>
+      <p class="muted">A → B는 "B가 A를 인용하거나(상기 A) A와 연결·작용 관계에 있음"을 뜻합니다. 화살표는 먼저 기재된 구성에서 뒤 구성으로 향합니다.</p>
     </section>
 
     <section class="card">
@@ -294,6 +303,20 @@ const SCOPE_TERMS=['및/또는','중 적어도 하나','적어도 하나의','�
   'and/or','at least one of','at least one','a plurality of','plurality','each','one or more','substantially','about','approximately','consisting of','only',
   '少なくとも一つ','少なくとも1つ','複数の','それぞれ','又は','及び','约','至少一个','多个','分别','或'];
 
+const STEP_RE=/단계|과정|step|ステップ|工程|步骤/i;
+function isStep(raw,lang){ return STEP_RE.test(raw) || (lang==='en' && /^\s*(?:and\s+)?[a-z]+ing\b/i.test(raw)); }
+
+// 청구 대상(표제)과 본문 구성이 맞지 않으면 사유를 돌려준다
+function typeWarning(lang,parts,els){
+  if(!els.length) return null;
+  const subject=(lang==='ko'||lang==='ja')?parts.end:parts.pre;
+  const isMethod=/방법|method|process|方法/i.test(subject);
+  const steps=els.filter(e=>isStep(e.raw,lang)).length;
+  if(isMethod && steps===0) return '표제는 방법인데 본문에 단계가 없습니다.';
+  if(!isMethod && steps===els.length) return '표제는 장치·시스템인데 본문이 단계로만 이루어져 있습니다.';
+  return null;
+}
+
 function analyze(text){
   const lang=detectLang(text);
   const claims=splitClaims(text).map(c=>{
@@ -305,8 +328,12 @@ function analyze(text){
       e.relations=REL_KW[lang].filter(k=>low.includes(k.toLowerCase()));
       e.refs=els.filter(o=>o!==e && o.name.length>=2 && low.includes(o.name.toLowerCase())).map(o=>o.no);
       e.scope=SCOPE_TERMS.filter(k=>e.raw.toLowerCase().includes(k.toLowerCase().trim()));
+      e.unclear = e.name.length<2 || (e.name===e.raw && e.raw.length>15) || e.raw.length>250;
     });
-    return {num:c.num,text:c.text,deps,independent:deps.length===0,...parts,elements:els};
+    const isDep=deps.length>0;
+    return {num:c.num,text:c.text,deps,independent:!isDep,...parts,elements:els,
+            warning:isDep?null:typeWarning(lang,parts,els),
+            unclear:!parts.trans};
   });
   return {lang,claims};
 }
@@ -386,7 +413,9 @@ function renderClaim(){
   const c=STATE.claims[CUR];
   const seg=(cls,lab,txt)=>txt?`<div class="seg ${cls}"><span class="lab">${lab}</span>${highlight(txt)}</div>`:'';
   const endLab=(STATE.lang==='ko'||STATE.lang==='ja')?'종결부 (청구 대상)':'종결부';
-  $('structure').innerHTML=
+  const warn=(c.warning?`<div class="warn">⚠ 청구항 유형 주의 — ${esc(c.warning)}</div>`:'')+
+    (c.unclear?`<div class="warn">(원문 불명확) 연결부(포함하는, comprising 등)를 찾지 못해 구조 분해가 부정확할 수 있습니다.</div>`:'');
+  $('structure').innerHTML=warn+
     seg('pre','전제부'+(c.independent?'':' (인용 청구항)'),c.pre)+
     seg('body','본문',c.body)+
     seg('tr','연결부',c.trans)+
@@ -398,13 +427,16 @@ function renderClaim(){
   renderTable(c); renderGraph(c);
 }
 
+// 공통 기준: "A → B" = B가 A를 인용하거나 A와 연결·작용 관계에 있음 (먼저 기재된 구성 → 뒤 구성)
+function links(c,e){ return e.refs.map(n=>`${c.elements[n-1].name} → ${e.name}`); }
+
 function renderTable(c){
   const key=n=>c.num+'-'+n;
-  $('elements').innerHTML=`<tr><th>No</th><th>구성요소</th><th>청구항 원문</th><th>기능·관계 키워드</th><th>참조 구성</th><th>검토</th><th>메모</th></tr>`+
+  $('elements').innerHTML=`<tr><th>No</th><th>구성요소</th><th>청구항 원문</th><th>기능·관계 키워드</th><th>연결관계</th><th>검토</th><th>메모</th></tr>`+
     c.elements.map(e=>{const r=REVIEW[key(e.no)]||{};return `<tr>
-      <td>${e.no}</td><td class="name">${esc(e.name)}</td><td class="raw">${highlight(e.raw)}</td>
+      <td>${e.no}</td><td class="name">${esc(e.name)}${e.unclear?'<br><span class="tag unclear">(원문 불명확)</span>':''}</td><td class="raw">${highlight(e.raw)}</td>
       <td>${e.relations.map(k=>`<span class="tag">${esc(k)}</span>`).join('')||'<span class="muted">-</span>'}</td>
-      <td>${e.refs.length?e.refs.map(n=>'#'+n).join(', '):'<span class="muted">-</span>'}</td>
+      <td>${links(c,e).map(esc).join('<br>')||'<span class="muted">-</span>'}</td>
       <td><select data-k="${key(e.no)}" data-f="mark"><option value="">-</option>${['O','△','X'].map(v=>`<option ${r.mark===v?'selected':''}>${v}</option>`).join('')}</select></td>
       <td><input type="text" data-k="${key(e.no)}" data-f="memo" value="${esc(r.memo||'')}" placeholder="대응 구성·근거"></td></tr>`}).join('');
   $('elements').querySelectorAll('[data-k]').forEach(el=>el.oninput=el.onchange=()=>{
@@ -419,7 +451,7 @@ function renderGraph(c){
   const css=getComputedStyle(document.documentElement);
   const ink=css.getPropertyValue('--ink'), line=css.getPropertyValue('--sub'), fill=css.getPropertyValue('--body'), stroke=css.getPropertyValue('--body-b');
   let edges='';
-  els.forEach((e,i)=>e.refs.forEach(n=>{ const j=n-1, a=pos[i], b=pos[j];
+  els.forEach((e,i)=>e.refs.forEach(n=>{ const j=n-1, a=pos[j], b=pos[i]; // 참조된 구성(A) → 참조하는 구성(B)
     const dx=b.x-a.x, dy=b.y-a.y, d=Math.hypot(dx,dy)||1, off=46;
     edges+=`<line x1="${a.x+dx/d*off}" y1="${a.y+dy/d*off}" x2="${b.x-dx/d*off}" y2="${b.y-dy/d*off}" stroke="${line}" stroke-width="1.5" marker-end="url(#arr)"/>`; }));
   const nodes=els.map((e,i)=>{const p=pos[i], label=e.name.length>10?e.name.slice(0,10)+'…':e.name;
@@ -434,16 +466,18 @@ function renderGraph(c){
 function rows(){
   const out=[];
   STATE.claims.forEach(c=>c.elements.forEach(e=>{const r=REVIEW[c.num+'-'+e.no]||{};
-    out.push({claim:c.num,type:c.independent?'독립':'종속('+c.deps.join(',')+')',no:e.no,name:e.name,raw:e.raw,
-      rel:e.relations.join(' '),refs:e.refs.map(n=>'#'+n).join(' '),mark:r.mark||'',memo:r.memo||''});}));
+    out.push({claim:c.num,type:c.independent?'독립':'종속('+c.deps.join(',')+')',no:e.no,
+      name:e.name+(e.unclear?' (원문 불명확)':''),raw:e.raw,
+      rel:e.relations.join(' '),refs:links(c,e).join('; '),mark:r.mark||'',memo:r.memo||''});}));
   return out;
 }
 function toMarkdown(){
   let md='';
   STATE.claims.forEach(c=>{
     md+=`## 청구항 ${c.num} (${c.independent?'독립항':'종속항 ← '+c.deps.join(', ')})\n\n`;
-    md+=`- 전제부: ${c.pre||'-'}\n- 연결부: ${c.trans||'-'}\n- 종결부: ${c.end||'-'}\n\n`;
-    md+='| No | 구성요소 | 원문 | 참조 | 검토 | 메모 |\n|---|---|---|---|---|---|\n';
+    if(c.warning) md+=`> ⚠ 청구항 유형 주의 — ${c.warning}\n\n`;
+    md+=`- 전제부: ${c.pre||'-'}\n- 연결부: ${c.trans||'(원문 불명확)'}\n- 종결부: ${c.end||'-'}\n\n`;
+    md+='| No | 구성요소 | 원문 | 연결관계 | 검토 | 메모 |\n|---|---|---|---|---|---|\n';
     rows().filter(r=>r.claim===c.num).forEach(r=>md+=`| ${r.no} | ${r.name} | ${r.raw.replace(/\|/g,'\\|').replace(/\n/g,' ')} | ${r.refs||'-'} | ${r.mark||'-'} | ${r.memo||''} |\n`);
     md+='\n';
   });
@@ -451,7 +485,7 @@ function toMarkdown(){
 }
 function toCSV(){
   const q=v=>'"'+String(v).replace(/"/g,'""').replace(/\n/g,' ')+'"';
-  const head=['청구항','구분','No','구성요소','원문','기능·관계','참조','검토','메모'];
+  const head=['청구항','구분','No','구성요소','원문','기능·관계','연결관계','검토','메모'];
   return '﻿'+[head.map(q).join(',')].concat(rows().map(r=>[r.claim,r.type,r.no,r.name,r.raw,r.rel,r.refs,r.mark,r.memo].map(q).join(','))).join('\r\n');
 }
 

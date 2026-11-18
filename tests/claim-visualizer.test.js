@@ -56,4 +56,26 @@ test('중국어: 연결부와 구성요소', () => {
   assert.deepStrictEqual(r.claims[1].deps, [1]);
 });
 
+test('유형 주의: 정상 청구항에는 경고 없음', () => {
+  const r = analyze(sample('SAMPLE_KO'));
+  assert.deepStrictEqual(r.claims.map(c => c.warning), [null, null, null, null]);
+  assert.deepStrictEqual(analyze(sample('SAMPLE_EN')).claims.map(c => c.warning), [null, null, null]);
+});
+
+test('유형 주의: 방법 표제인데 단계가 없음', () => {
+  const c = analyze('【청구항 1】\n온도를 감지하는 센서부;\n신호를 처리하는 처리부를 포함하는 체온 측정 방법.').claims[0];
+  assert.ok(c.warning && c.warning.includes('방법'));
+});
+
+test('유형 주의: 장치 표제인데 단계로만 구성', () => {
+  const c = analyze('1. A device, comprising:\nsensing a temperature;\nconverting the temperature into data.').claims[0];
+  assert.ok(c.warning && c.warning.includes('장치'));
+});
+
+test('원문 불명확: 연결부를 찾지 못한 청구항', () => {
+  const c = analyze('【청구항 1】\n센서와 처리기로 이루어진 장치').claims[0];
+  assert.strictEqual(c.unclear, true);
+  assert.strictEqual(analyze(sample('SAMPLE_KO')).claims[0].unclear, false);
+});
+
 console.log(`\n${passed}개 테스트 통과`);
