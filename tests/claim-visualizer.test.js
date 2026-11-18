@@ -23,21 +23,21 @@ test('한국어: 청구항 분리와 인용관계', () => {
 test('한국어: 장치 독립항 구조 분해', () => {
   const c = analyze(sample('SAMPLE_KO')).claims[0];
   assert.strictEqual(c.trans, '를 포함하는');
-  assert.strictEqual(c.end, '웨어러블 체온 측정 장치.');
-  assert.deepStrictEqual(names(c), ['온도 센서부', '신호 처리부', '통신부', '전원부']);
-  assert.deepStrictEqual(c.elements[3].refs, [1, 2, 3]);
+  assert.strictEqual(c.end, '스테이플러.');
+  assert.deepStrictEqual(names(c), ['베이스부', '매거진부', '푸셔부', '타출부', '앤빌부']);
+  assert.deepStrictEqual(c.elements[4].refs, [1, 4]);
 });
 
 test('한국어: 방법 청구항 단계 이름', () => {
   const c = analyze(sample('SAMPLE_KO')).claims[3];
-  assert.deepStrictEqual(names(c), ['감지 단계', '변환 단계', '송신 단계']);
+  assert.deepStrictEqual(names(c), ['장전 단계', '배치 단계', '타출 단계', '절곡 단계']);
 });
 
 test('영어: 구조 분해와 범위 인용', () => {
   const r = analyze(sample('SAMPLE_EN'));
   assert.strictEqual(r.lang, 'en');
   assert.strictEqual(r.claims[0].trans, 'comprising');
-  assert.deepStrictEqual(names(r.claims[0]), ['temperature sensor', 'signal processor', 'communication unit', 'power supply']);
+  assert.deepStrictEqual(names(r.claims[0]), ['base', 'magazine', 'pusher', 'driver', 'anvil']);
   assert.deepStrictEqual(r.claims[2].deps, [1, 2]);
   assert.deepStrictEqual(analyze('1. A device comprising a part.\n5. The device of claims 1 to 3, wherein the part is metal.').claims[1].deps, [1, 2, 3]);
 });
@@ -80,8 +80,8 @@ test('원문 불명확: 연결부를 찾지 못한 청구항', () => {
 
 test('구성요소 기호: 청구항마다 a부터 시작', () => {
   const r = analyze(sample('SAMPLE_KO'));
-  assert.deepStrictEqual(r.claims[0].elements.map(e => e.sym), ['a', 'b', 'c', 'd']);
-  assert.deepStrictEqual(r.claims[3].elements.map(e => e.sym), ['a', 'b', 'c']);
+  assert.deepStrictEqual(r.claims[0].elements.map(e => e.sym), ['a', 'b', 'c', 'd', 'e']);
+  assert.deepStrictEqual(r.claims[3].elements.map(e => e.sym), ['a', 'b', 'c', 'd']);
   const many = analyze('1. A device comprising:\n' + Array.from({ length: 28 }, (_, i) => `a part${i}`).join(';\n') + '.');
   assert.deepStrictEqual(many.claims[0].elements.slice(25, 28).map(e => e.sym), ['z', 'aa', 'ab']);
 });

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>청구항 대비 분석 — 웨어러블 체온 측정 장치 (예시)</title>
+<title>청구항 대비 분석 — 스테이플러 (가상 예시)</title>
 <style>
   :root { box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
   *, *::before, *::after { box-sizing: inherit; }
@@ -110,8 +110,8 @@
 <!-- 상단: 제목 + 메타 태그 -->
 <div class="page-head">
   <div>
-    <h1 class="page-title">청구항 대비 분석 — 웨어러블 체온 측정 장치 <span style="font-size:13px;color:#e65100">(가상 예시)</span></h1>
-    <div class="page-sub">분석 대상: 청구항 1~3 / 대비 대상: 패치형 체온 모니터링 기기</div>
+    <h1 class="page-title">청구항 대비 분석 — 스테이플러 <span style="font-size:13px;color:#e65100">(가상 예시)</span></h1>
+    <div class="page-sub">분석 대상: 청구항 1~3 / 대비 대상: 핸디형 스테이플러 (가상 기업 기술)</div>
   </div>
   <button class="copy-btn" onclick="copyAll()">전체 복사</button>
 </div>
@@ -119,9 +119,9 @@
   <span class="tag tag-lang">한국어</span>
   <span class="tag tag-type">독립항 (장치청구항)</span>
   <!-- [META TAGS HERE] : 청구항 주요 특징 3~4개를 tag-info, tag-key 클래스로 교차 추가 -->
-  <span class="tag tag-info">피부 접촉 온도 감지</span>
-  <span class="tag tag-key">무선 데이터 송신</span>
-  <span class="tag tag-info">신호 디지털 변환</span>
+  <span class="tag tag-info">회동식 매거진</span>
+  <span class="tag tag-key">스테이플 타출</span>
+  <span class="tag tag-info">앤빌 절곡</span>
 </div>
 
 <!-- ===== 섹션 1. 청구항 분석 ===== -->
@@ -141,38 +141,44 @@
       <tr>
         <td class="c-claim">청구항 1 (독립항, 대표청구항)</td>
         <td class="c-comp">a</td>
-        <td class="c-body">피부에 접촉하여 온도를 감지하는 온도 센서부</td>
-        <td><span class="mark mark-o">O</span>기업 기술의 패치 하단 접촉식 서미스터가 피부 온도를 감지하는 동일 구성임</td>
+        <td class="c-body">베이스부</td>
+        <td><span class="mark mark-o">O</span>하단 받침대(베이스)가 동일하게 구비됨</td>
       </tr>
       <tr>
         <td class="c-claim">청구항 1 (독립항, 대표청구항)</td>
         <td class="c-comp">b</td>
-        <td class="c-body">상기 온도 센서부로부터 수신한 신호를 디지털 데이터로 변환하는 신호 처리부</td>
-        <td><span class="mark mark-o">O</span>MCU 내장 ADC가 센서 신호를 디지털 값으로 변환하는 구성과 실질적으로 같음</td>
+        <td class="c-body">베이스부의 일단에 회동 가능하게 결합되고, 복수의 스테이플을 수납하는 매거진부</td>
+        <td><span class="mark mark-t">△</span>스테이플을 수납하는 매거진은 있으나, 기업 기술은 매거진이 회동이 아닌 전방 슬라이드 방식으로 열림. 결합 방식에 차이 있음</td>
       </tr>
       <tr>
         <td class="c-claim">청구항 1 (독립항, 대표청구항)</td>
         <td class="c-comp">c</td>
-        <td class="c-body">상기 신호 처리부와 연결되어 상기 디지털 데이터를 외부 단말로 송신하는 통신부</td>
-        <td><span class="mark mark-o">O</span>BLE 모듈로 스마트폰에 측정값을 전송하는 구성과 대응함</td>
+        <td class="c-body">매거진부 내에 배치되어 스테이플을 전방으로 밀어주는 푸셔부</td>
+        <td><span class="mark mark-o">O</span>매거진 내 푸셔가 스테이플을 전방으로 미는 구성과 실질적으로 같음</td>
       </tr>
       <tr>
         <td class="c-claim">청구항 1 (독립항, 대표청구항)</td>
         <td class="c-comp">d</td>
-        <td class="c-body">상기 온도 센서부, 상기 신호 처리부 및 상기 통신부 중 적어도 하나에 전원을 공급하는 전원부</td>
-        <td><span class="mark mark-t">△</span>기업 기술은 코인 전지를 쓰나 센서부 직접 급전 여부는 자료로 확인되지 않음</td>
+        <td class="c-body">매거진부의 상부에 배치되어 가압 시 스테이플을 하방으로 타출하는 타출부</td>
+        <td><span class="mark mark-o">O</span>레버를 누르면 타출판이 스테이플을 아래로 밀어내는 구성과 대응함</td>
+      </tr>
+      <tr>
+        <td class="c-claim">청구항 1 (독립항, 대표청구항)</td>
+        <td class="c-comp">e</td>
+        <td class="c-body">베이스부의 상면에 배치되어 타출된 스테이플의 다리를 절곡하는 앤빌부</td>
+        <td><span class="mark mark-o">O</span>베이스 상면의 앤빌이 스테이플 다리를 접는 구성과 대응함</td>
       </tr>
       <tr>
         <td class="c-claim">청구항 2 (청구항 1의 종속항)</td>
         <td class="c-comp">a</td>
-        <td class="c-body">상기 온도 센서부는 복수의 서미스터를 포함함</td>
-        <td><span class="mark mark-t">△</span>기업 기술은 단일 서미스터 구조로, 복수 구성과 차이가 있음</td>
+        <td class="c-body">푸셔부는 스테이플을 탄성적으로 가압하는 스프링을 포함함</td>
+        <td><span class="mark mark-o">O</span>코일 스프링이 푸셔를 탄성 가압하는 구성과 같음</td>
       </tr>
       <tr>
         <td class="c-claim">청구항 3 (청구항 1 또는 2의 종속항)</td>
         <td class="c-comp">a</td>
-        <td class="c-body">상기 통신부는 블루투스 및/또는 NFC 방식으로 상기 디지털 데이터를 송신함</td>
-        <td><span class="mark mark-o">O</span>BLE 방식 송신이 '블루투스'에 해당함</td>
+        <td class="c-body">앤빌부는 스테이플의 다리를 내측 및/또는 외측으로 절곡하도록 회전 가능함</td>
+        <td><span class="mark mark-x">X</span>기업 기술의 앤빌은 고정식으로 내측 절곡만 하며, 회전 구성이 없음</td>
       </tr>
       <!-- /CLAIM ROWS -->
     </tbody>
@@ -183,14 +189,14 @@
 <h2 class="section-title"><span class="section-num">2</span>구성요소 시각화 분석 — 청구항 1</h2>
 <div class="summary-card">
   <h3>청구항 요약</h3>
-  <p>피부에 접촉하는 온도 센서부, 신호를 디지털 데이터로 바꾸는 신호 처리부, 이를 외부 단말로 보내는 통신부, 전원부로 이루어진 웨어러블 체온 측정 장치이다.</p>
+  <p>베이스부에 회동 결합된 매거진부, 스테이플을 미는 푸셔부, 스테이플을 타출하는 타출부, 스테이플 다리를 절곡하는 앤빌부로 이루어진 스테이플러이다.</p>
 </div>
 <div class="section-label">구조 분해 (전제부·연결부·본문·종결부, 특징부 = 연결부 + 본문)</div>
 <div class="struct">
-  <div><b>전제부</b><span>사용자의 체온을 측정하는 웨어러블 장치에 있어서,</span></div>
+  <div><b>전제부</b><span>종이 묶음을 철하는 스테이플러에 있어서,</span></div>
   <div><b>연결부</b><span>~를 포함하는</span></div>
-  <div><b>본문</b><span>구성요소 a ~ d (아래 카드 참조)</span></div>
-  <div><b>종결부</b><span>웨어러블 체온 측정 장치.</span></div>
+  <div><b>본문</b><span>구성요소 a ~ e (아래 카드 참조)</span></div>
+  <div><b>종결부</b><span>스테이플러.</span></div>
 </div>
 
 <!-- [COMPONENT CARDS HERE] : 아래 카드를 구성요소 수만큼 반복 -->
@@ -198,57 +204,68 @@
   <div class="comp-header">
     <span class="comp-badge">구성 a</span>
     <div>
-      <div class="comp-name">온도 센서부</div>
-      <div class="comp-orig">온도 센서부 (temperature sensor)</div>
+      <div class="comp-name">베이스부</div>
+      <div class="comp-orig">베이스부 (base)</div>
     </div>
   </div>
-  <div class="comp-desc">사용자의 피부에 접촉한 상태에서 체온에 대응하는 온도를 감지한다. 감지 결과를 전기 신호로 출력한다.</div>
+  <div class="comp-desc">스테이플러의 하부를 이루며 종이 묶음이 놓이는 받침 역할을 한다. 다른 구성이 결합되거나 배치되는 기준이 된다.</div>
   <div class="comp-relation"><span>연결관계:</span> 해당 없음 (최초 구성)</div>
 </div>
 <div class="component-card">
   <div class="comp-header">
     <span class="comp-badge">구성 b</span>
     <div>
-      <div class="comp-name">신호 처리부</div>
-      <div class="comp-orig">신호 처리부 (signal processor)</div>
+      <div class="comp-name">매거진부</div>
+      <div class="comp-orig">매거진부 (magazine)</div>
     </div>
   </div>
-  <div class="comp-desc">온도 센서부가 출력한 아날로그 신호를 받아 디지털 데이터로 변환한다.</div>
-  <div class="comp-relation"><span>연결관계:</span> a → b (신호 수신)</div>
+  <div class="comp-desc">베이스부의 일단에 회동 가능하게 결합되어 복수의 스테이플을 수납한다. 회동하여 종이 묶음 위로 내려온다.</div>
+  <div class="comp-relation"><span>연결관계:</span> a → b (회동 결합)</div>
 </div>
 <div class="component-card">
   <div class="comp-header">
     <span class="comp-badge">구성 c</span>
     <div>
-      <div class="comp-name">통신부</div>
-      <div class="comp-orig">통신부 (communication unit)</div>
+      <div class="comp-name">푸셔부</div>
+      <div class="comp-orig">푸셔부 (pusher)</div>
     </div>
   </div>
-  <div class="comp-desc">신호 처리부와 연결되어 변환된 디지털 데이터를 외부 단말로 송신한다.</div>
-  <div class="comp-relation"><span>연결관계:</span> b → c (데이터 전달)</div>
+  <div class="comp-desc">매거진부 내에 배치되어 수납된 스테이플을 전방의 타출 위치로 밀어준다.</div>
+  <div class="comp-relation"><span>연결관계:</span> b → c (매거진 내 배치)</div>
 </div>
 <div class="component-card">
   <div class="comp-header">
     <span class="comp-badge">구성 d</span>
     <div>
-      <div class="comp-name">전원부</div>
-      <div class="comp-orig">전원부 (power supply)</div>
+      <div class="comp-name">타출부</div>
+      <div class="comp-orig">타출부 (driver)</div>
     </div>
   </div>
-  <div class="comp-desc">센서부, 신호 처리부, 통신부 중 적어도 하나에 동작 전원을 공급한다.</div>
-  <div class="comp-relation"><span>연결관계:</span> a, b, c → d (전원 공급 대상)</div>
+  <div class="comp-desc">매거진부 상부에 배치되며, 가압되면 맨 앞의 스테이플을 하방으로 타출한다.</div>
+  <div class="comp-relation"><span>연결관계:</span> b → d (매거진 상부 배치)</div>
+</div>
+<div class="component-card">
+  <div class="comp-header">
+    <span class="comp-badge">구성 e</span>
+    <div>
+      <div class="comp-name">앤빌부</div>
+      <div class="comp-orig">앤빌부 (anvil)</div>
+    </div>
+  </div>
+  <div class="comp-desc">베이스부 상면에 배치되어, 종이 묶음을 관통한 스테이플의 다리를 절곡한다.</div>
+  <div class="comp-relation"><span>연결관계:</span> a → e (상면 배치), d → e (타출된 스테이플 절곡)</div>
 </div>
 <!-- /COMPONENT CARDS -->
 
 <div class="feature-summary">
   <h3>핵심 특징 요약</h3>
-  <p>본 발명은 피부 접촉식 온도 감지, 감지 신호의 디지털 변환, 외부 단말로의 무선 송신을 하나의 웨어러블 장치에 결합한 것을 특징으로 한다. 전원부는 각 구성 중 적어도 하나에 전원을 공급하도록 한정된다.</p>
+  <p>본 발명은 베이스부에 회동 가능하게 결합된 매거진부와, 매거진부 내외에 배치된 푸셔부·타출부, 베이스부 상면의 앤빌부를 조합한 것을 특징으로 한다. 타출부에서 타출된 스테이플이 앤빌부에서 절곡되어 종이 묶음을 철한다.</p>
 </div>
 
 <!-- ===== 섹션 3. 청구항 기술 요약 ===== -->
 <h2 class="section-title"><span class="section-num">3</span>청구항 기술 요약</h2>
 <div class="brief-card">
-  <p>피부에 부착한 센서로 체온을 감지해 디지털로 변환한 뒤 외부 단말로 보내, 체온을 연속으로 모니터링하는 웨어러블 장치.</p>
+  <p>회동식 매거진에서 스테이플을 밀어 타출하고 앤빌에서 다리를 접어, 종이 묶음을 철하는 스테이플러.</p>
 </div>
 
 <!-- ===== 섹션 4. 공통점 및 차이점 검토 ===== -->
@@ -258,16 +275,16 @@
     <h3>공통점</h3>
     <ul>
       <!-- 항목 수만큼 li 반복 -->
-      <li>피부 접촉식 온도 감지, 디지털 변환, 블루투스 송신 구성이 대응함 (1a, 1b, 1c, 3a)</li>
-      <li>웨어러블 형태로 체온을 측정하는 목적이 같음</li>
+      <li>베이스, 푸셔, 타출부, 앤빌로 스테이플을 타출·절곡하는 기본 구성이 대응함 (1a, 1c, 1d, 1e)</li>
+      <li>스프링으로 푸셔를 탄성 가압하는 구성이 같음 (2a)</li>
     </ul>
   </div>
   <div class="compare-card diff">
     <h3>차이점</h3>
     <ul>
       <!-- 항목 수만큼 li 반복 -->
-      <li>기업 기술은 단일 서미스터 구조로, 복수 서미스터를 한정한 구성과 다름 (2a)</li>
-      <li>전원부가 센서부에 직접 급전하는지는 자료로 확인되지 않음 (1d)</li>
+      <li>매거진이 베이스에 회동 결합되는 구성과 달리, 기업 기술은 전방 슬라이드 방식으로 열림 (1b)</li>
+      <li>청구항 3의 회전형 앤빌과 달리, 기업 기술의 앤빌은 고정식임 (3a)</li>
     </ul>
   </div>
 </div>
@@ -277,12 +294,12 @@
 
 <!-- [OPINION CARDS HERE] : 침해 리스크 / 회피 설계 / 개량 방안 중 유의미한 항목 수만큼 카드 반복 -->
 <div class="opinion-card">
-  <h3>침해 리스크 (문언)</h3>
-  <p>청구항 1의 a~c가 기업 기술과 사실상 동일하고 d도 일반적인 전원 구성이라, 문언 침해 리스크가 높은 것으로 보임. 1d의 급전 구조를 확인할 필요가 있음.</p>
+  <h3>침해 리스크 (문언·균등)</h3>
+  <p>청구항 1은 1b를 제외한 구성이 대응하므로, 1b의 "회동 가능하게 결합" 해석이 문언 침해 판단의 핵심으로 보임. 슬라이드 방식이 같은 기능을 하는지에 따라 균등 여부를 추가 검토할 필요가 있음.</p>
 </div>
 <div class="opinion-card">
   <h3>회피 설계 방향</h3>
-  <p>청구항 1은 구성이 일반적이어서 회피 여지가 작아 보임. 종속항 2는 단일 서미스터 구조를 유지하면 해당하지 않을 가능성이 있음.</p>
+  <p>매거진의 슬라이드 개방 구조를 유지하는 것이 청구항 1의 회피 근거가 될 가능성이 있음. 청구항 3은 고정식 앤빌을 유지하면 해당하지 않을 것으로 보임.</p>
 </div>
 <!-- /OPINION CARDS -->
 

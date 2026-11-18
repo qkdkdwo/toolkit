@@ -351,29 +351,32 @@ const LANG_NAME={ko:'한국어',en:'영어',ja:'일본어',zh:'중국어'};
 let STATE=null, CUR=0, REVIEW={};
 
 const SAMPLE_KO=`【청구항 1】
-사용자의 체온을 측정하는 웨어러블 장치에 있어서,
-피부에 접촉하여 온도를 감지하는 온도 센서부;
-상기 온도 센서부로부터 수신한 신호를 디지털 데이터로 변환하는 신호 처리부;
-상기 신호 처리부와 연결되어 상기 디지털 데이터를 외부 단말로 송신하는 통신부; 및
-상기 온도 센서부, 상기 신호 처리부 및 상기 통신부 중 적어도 하나에 전원을 공급하는 전원부를 포함하는 웨어러블 체온 측정 장치.
+종이 묶음을 철하는 스테이플러에 있어서,
+베이스부;
+상기 베이스부의 일단에 회동 가능하게 결합되고, 복수의 스테이플을 수납하는 매거진부;
+상기 매거진부 내에 배치되어 상기 스테이플을 전방으로 밀어주는 푸셔부;
+상기 매거진부의 상부에 배치되어 가압 시 상기 스테이플을 하방으로 타출하는 타출부; 및
+상기 베이스부의 상면에 배치되어 상기 타출부에서 타출된 상기 스테이플의 다리를 절곡하는 앤빌부를 포함하는 스테이플러.
 【청구항 2】
 제1항에 있어서,
-상기 온도 센서부는 복수의 서미스터를 포함하는 것을 특징으로 하는 웨어러블 체온 측정 장치.
+상기 푸셔부는 상기 스테이플을 탄성적으로 가압하는 스프링을 포함하는 것을 특징으로 하는 스테이플러.
 【청구항 3】
 제1항 또는 제2항에 있어서,
-상기 통신부는 블루투스 및/또는 NFC 방식으로 상기 디지털 데이터를 송신하는 것을 특징으로 하는 웨어러블 체온 측정 장치.
+상기 앤빌부는 상기 스테이플의 다리를 내측 및/또는 외측으로 절곡하도록 회전 가능한 것을 특징으로 하는 스테이플러.
 【청구항 4】
-온도 센서부가 사용자의 피부 온도를 감지하는 단계;
-신호 처리부가 감지된 온도 신호를 디지털 데이터로 변환하는 단계; 및
-통신부가 상기 디지털 데이터를 외부 단말로 송신하는 단계를 포함하는 체온 측정 방법.`;
+매거진부에 복수의 스테이플을 장전하는 단계;
+종이 묶음을 베이스부와 상기 매거진부 사이에 배치하는 단계;
+타출부를 가압하여 상기 스테이플을 상기 종이 묶음에 관통하도록 타출하는 단계; 및
+앤빌부가 관통된 상기 스테이플의 다리를 절곡하는 단계를 포함하는 스테이플링 방법.`;
 
-const SAMPLE_EN=`1. A wearable temperature measuring device, comprising:
-a temperature sensor configured to contact skin of a user and sense a temperature;
-a signal processor configured to convert a signal received from the temperature sensor into digital data;
-a communication unit connected to the signal processor and configured to transmit the digital data to an external terminal; and
-a power supply configured to supply power to at least one of the temperature sensor, the signal processor, and the communication unit.
-2. The device of claim 1, wherein the temperature sensor comprises a plurality of thermistors.
-3. The device of claim 1 or 2, wherein the communication unit transmits the digital data via Bluetooth and/or NFC.`;
+const SAMPLE_EN=`1. A stapler, comprising:
+a base;
+a magazine coupled to one end of the base so as to be pivotable and configured to accommodate a plurality of staples;
+a pusher disposed in the magazine and configured to push the staples forward;
+a driver disposed above the magazine and configured to drive a staple downward when pressed; and
+an anvil disposed on an upper surface of the base and configured to bend legs of the staple driven by the driver.
+2. The stapler of claim 1, wherein the pusher comprises a spring that elastically presses the staples.
+3. The stapler of claim 1 or 2, wherein the anvil is rotatable to bend the legs of the staple inward and/or outward.`;
 
 function esc(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 function highlight(s){
