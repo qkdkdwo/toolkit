@@ -16,7 +16,7 @@
 1. `prompt.md` 본문을 AI 서비스의 프로젝트 지침(Claude 프로젝트, ChatGPT 프로젝트·GPTs 등)에 붙여 넣습니다.
 2. `template.html`을 같은 프로젝트에 파일로 첨부합니다.
 3. 대화에 기업 보유 기술, 특허 청구항, (권장) 발명의 설명을 넣습니다.
-4. (선택) [청구항 분해·시각화 도구](https://qkdkdwo.github.io/toolkit/tools/claim-visualizer/)에서 내려받은 CSV를 함께 넣으면 그 분해 결과를 출발점으로 분석합니다.
+4. (선택) [청구항 분해·시각화 도구](https://qkdkdwo.github.io/patent-analysis-toolkit/tools/claim-visualizer/)에서 내려받은 CSV를 함께 넣으면 그 분해 결과를 출발점으로 분석합니다.
 
 ## 결과물 구성
 
